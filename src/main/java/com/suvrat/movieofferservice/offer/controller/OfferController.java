@@ -8,8 +8,13 @@ import com.suvrat.movieofferservice.offer.dto.EvaluateOffersRequest;
 import com.suvrat.movieofferservice.offer.dto.EvaluatedOfferResponse;
 import com.suvrat.movieofferservice.offer.dto.OfferResponse;
 import com.suvrat.movieofferservice.offer.service.OfferService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,37 +24,55 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/offers")
+@RequiredArgsConstructor
+@Tag(name = "Offers", description = "Create, evaluate, apply, and inspect movie booking offers")
 public class OfferController {
 
     private final OfferService offerService;
 
-    public OfferController(OfferService offerService) {
-        this.offerService = offerService;
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OfferResponse createOffer(@RequestBody CreateOfferRequest request) {
-        return offerService.createOffer(request);
+    @Operation(
+            summary = "Create an offer",
+            description = "Creates a new movie booking offer and returns the created offer details."
+    )
+    public ResponseEntity<OfferResponse> createOffer(@RequestBody CreateOfferRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(offerService.createOffer(request));
     }
 
     @GetMapping
-    public List<OfferResponse> listOffers() {
-        return offerService.listOffers();
+    @Operation(
+            summary = "List all offers",
+            description = "Returns all available offers."
+    )
+    public ResponseEntity<List<OfferResponse>> listOffers() {
+        return ResponseEntity.ok(offerService.listOffers());
     }
 
     @PostMapping("/evaluate")
-    public List<EvaluatedOfferResponse> evaluateOffers(@RequestBody EvaluateOffersRequest request) {
-        return offerService.evaluateOffers(request);
+    @Operation(
+            summary = "Evaluate offers",
+            description = "Evaluates eligible offers for the provided movie booking request."
+    )
+    public ResponseEntity<List<EvaluatedOfferResponse>> evaluateOffers(@RequestBody EvaluateOffersRequest request) {
+        return ResponseEntity.ok(offerService.evaluateOffers(request));
     }
 
     @PostMapping("/apply")
-    public ApplyOfferResponse applyOffer(@RequestBody ApplyOfferRequest request) {
-        return offerService.applyOffer(request);
+    @Operation(
+            summary = "Apply an offer",
+            description = "Applies a selected offer to a booking and records redemption."
+    )
+    public ResponseEntity<ApplyOfferResponse> applyOffer(@RequestBody ApplyOfferRequest request) {
+        return ResponseEntity.ok(offerService.applyOffer(request));
     }
 
     @GetMapping("/applied")
-    public List<AppliedOfferResponse> listAppliedOffers() {
-        return offerService.listAppliedOffers();
+    @Operation(
+            summary = "List applied offers",
+            description = "Returns all applied offers and redemption history."
+    )
+    public ResponseEntity<List<AppliedOfferResponse>> listAppliedOffers() {
+        return ResponseEntity.ok(offerService.listAppliedOffers());
     }
 }

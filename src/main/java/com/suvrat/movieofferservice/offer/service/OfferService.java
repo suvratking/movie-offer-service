@@ -19,29 +19,28 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class OfferService {
 
     private final OfferRepository offerRepository;
     private final OfferRedemptionRepository offerRedemptionRepository;
 
-    public OfferService(OfferRepository offerRepository, OfferRedemptionRepository offerRedemptionRepository) {
-        this.offerRepository = offerRepository;
-        this.offerRedemptionRepository = offerRedemptionRepository;
-    }
-
     public OfferResponse createOffer(CreateOfferRequest request) {
         validateCreateRequest(request);
         String normalizedCode = normalizeOfferCode(request.code());
-        offerRepository.findByCode(normalizedCode).ifPresent(existing -> {
+        offerRepository.findOfferByCode(normalizedCode).ifPresent(_ -> {
             throw new OfferValidationException("Offer code already exists");
         });
         String normalizedSourceOfferCode = normalizeOfferCode(request.sourceOfferCode());
         if (normalizedSourceOfferCode != null) {
-            offerRepository.findBySourceOfferCode(normalizedSourceOfferCode).ifPresent(existing -> {
+            offerRepository.findOfferBySourceOfferCode(normalizedSourceOfferCode).ifPresent(_ -> {
                 throw new OfferValidationException("Source offer code already exists");
             });
         }
@@ -76,7 +75,7 @@ public class OfferService {
     }
 
     public List<AppliedOfferResponse> listAppliedOffers() {
-        return offerRedemptionRepository.findAllWithOfferByOrderByRedeemedAtDesc().stream()
+        return offerRedemptionRepository.findAllByOrderByRedeemedAtDesc().stream()
                 .map(AppliedOfferResponse::from)
                 .toList();
     }
@@ -86,7 +85,7 @@ public class OfferService {
         return offerRepository.findByActiveTrue().stream()
                 .map(offer -> evaluateSingleOffer(offer, request.userId(), request.movieId(), request.theaterId(),
                         request.paymentPartner(), request.sourceApp(), request.orderAmount()))
-                .filter(result -> result != null)
+                .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(EvaluatedOfferResponse::estimatedDiscount).reversed())
                 .toList();
     }
@@ -286,8 +285,8 @@ public class OfferService {
         if (normalizedCode == null) {
             throw new OfferValidationException("code is required");
         }
-        return offerRepository.findByCodeForUpdate(normalizedCode)
-                .or(() -> offerRepository.findBySourceOfferCodeForUpdate(normalizedCode))
+        return offerRepository.findByCode(normalizedCode)
+                .or(() -> offerRepository.findBySourceOfferCode(normalizedCode))
                 .orElseThrow(() -> new OfferValidationException("Offer not found"));
     }
 

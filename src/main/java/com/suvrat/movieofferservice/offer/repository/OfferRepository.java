@@ -6,20 +6,17 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
 
 public interface OfferRepository extends JpaRepository<Offer, Long> {
 
+    Optional<Offer> findOfferByCode(String code);
+    Optional<Offer> findOfferBySourceOfferCode(String sourceOfferCode);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Offer> findByCode(String code);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Offer> findBySourceOfferCode(String sourceOfferCode);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select o from Offer o where o.code = :code")
-    Optional<Offer> findByCodeForUpdate(String code);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select o from Offer o where o.sourceOfferCode = :sourceOfferCode")
-    Optional<Offer> findBySourceOfferCodeForUpdate(String sourceOfferCode);
 
     List<Offer> findByActiveTrue();
 }
