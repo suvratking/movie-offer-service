@@ -121,6 +121,7 @@ class OfferControllerWebTest {
 
         mockMvc.perform(get("/api/v1/offers"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].code").value("WELCOME20"));
     }
 
@@ -151,6 +152,7 @@ class OfferControllerWebTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].code").value("WELCOME20"));
     }
 
@@ -196,6 +198,7 @@ class OfferControllerWebTest {
 
         mockMvc.perform(get("/api/v1/offers/applied"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].offerCode").value("WELCOME20"));
     }
 
